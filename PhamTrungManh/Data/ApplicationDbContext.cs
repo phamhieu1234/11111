@@ -13,4 +13,6 @@ using PhamTrungManh.Models;
         }
 
         public DbSet<PhamTrungManh.Models.Student> Student { get; set; } = default!;
+
+        public DbSet<PhamTrungManh.Models.LopHoc> LopHoc { get; set; } = default!;
     }

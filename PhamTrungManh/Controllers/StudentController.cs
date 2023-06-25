@@ -2,16 +2,19 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using PhamTrungManh.Models.Process;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PhamTrungManh.Models;
+
 
 namespace PhamTrungManh.Controllers
 {
     public class StudentController : Controller
     {
         private readonly ApplicationDbContext _context;
+         private ExcelProcess _excelProcess = new ExcelProcess();
 
         public StudentController(ApplicationDbContext context)
         {
@@ -55,7 +58,7 @@ namespace PhamTrungManh.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("MaStudent,NameStudent,Diachi")] Student student)
+        public async Task<IActionResult> Create([Bind("MaStudent,NameStudent,Diachi, MaLop")] Student student)
         {
             if (ModelState.IsValid)
             {
@@ -87,7 +90,7 @@ namespace PhamTrungManh.Controllers
         // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(string id, [Bind("MaStudent,NameStudent,Diachi")] Student student)
+        public async Task<IActionResult> Edit(string id, [Bind("MaStudent,NameStudent,Diachi, MaLop")] Student student)
         {
             if (id != student.MaStudent)
             {
@@ -157,6 +160,54 @@ namespace PhamTrungManh.Controllers
         private bool StudentExists(string id)
         {
           return (_context.Student?.Any(e => e.MaStudent == id)).GetValueOrDefault();
+        }
+        public async Task<IActionResult> Upload()
+        {
+            return View();
+        }
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult>Upload(IFormFile file)
+        {
+            if (file!=null)
+            {
+                string fileExtension = Path.GetExtension(file.FileName);
+                if (fileExtension != ".xls" && fileExtension != ".xlsx")
+                {
+                    ModelState.AddModelError("", "Please choose excel file to upload!");
+                }
+                else
+                {
+                    //rename file when upload to sever
+                    var fileName = DateTime.Now.ToShortTimeString() + fileExtension;
+                    var filePath = Path.Combine(Directory.GetCurrentDirectory() + "/Uploads/Excels", fileName);
+                    var fileLocation = new FileInfo(filePath).ToString();
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        //save file to server
+                        await file.CopyToAsync(stream);
+                        //read data from file and write to database
+                        var dt = _excelProcess.ExcelToDataTable(fileLocation);
+                        //using for loop to read data form dt
+                        for (int i = 0; i < dt.Rows.Count; i++)
+                        {
+                            //create a new Person object
+                            var ser = new Student();
+                            //set values for attribiutes
+                            ser.MaStudent = dt.Rows[i][0].ToString();
+                            ser.NameStudent = dt.Rows[i][1].ToString();
+                            ser.MaLop = dt.Rows[i][2].ToString();
+                            ser.Diachi = dt.Rows[i][3].ToString();
+                            //add oject to context
+                            _context.Student.Add(ser);
+                        }
+                        //save to database
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                }
+            }
+            return View();
         }
     }
 }
