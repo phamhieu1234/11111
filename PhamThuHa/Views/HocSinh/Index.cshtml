@@ -1,0 +1,47 @@
+@model IEnumerable<PhamThuHa.Models.HocSinh>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Index</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.MaLopHoc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TenLopHoc)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DiaLopHoc)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.MaLopHoc)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TenLopHoc)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DiaLopHoc)
+            </td>
+            <td>
+                <a asp-action="Edit" asp-route-id="@item.MaLopHoc">Edit</a> |
+                <a asp-action="Details" asp-route-id="@item.MaLopHoc">Details</a> |
+                <a asp-action="Delete" asp-route-id="@item.MaLopHoc">Delete</a>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>
