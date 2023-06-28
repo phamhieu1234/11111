@@ -13,4 +13,6 @@ using PhamThuHa.Models;
         }
 
         public DbSet<PhamThuHa.Models.Student> Student { get; set; } = default!;
+
+        public DbSet<PhamThuHa.Models.KhachSan> KhachSan { get; set; } = default!;
     }
